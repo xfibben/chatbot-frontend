@@ -4,6 +4,7 @@ import Chatbot from './chatbot'
 
 import Suma from "@/app/components/suma";
 import Menu from "@/app/components/menus";
+import Chat from "@/app/components/chat";
 export default function Home() {
   return (
     
@@ -13,5 +14,4 @@ export default function Home() {
     </main>
   )
 }
-
 
