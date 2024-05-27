@@ -4,15 +4,21 @@ import { useState, useEffect } from "react";
 export default function Chat (){
     const [inputText, setInputText] = useState("");
     const [responseText, setResponseText] = useState(null);
+    const [buttons, setButtons] = useState([]);
 
     const handleInput = (e) => {
         setInputText(e.target.value);
     };
 
-    const sendMessage = async () => {
+    const sendMessage = async (payload) => {
+        setInputText(payload);
         console.log('enviado');
         const response = await getResponse();
-        setResponseText(response);
+        const text = response.text;
+        const buttons = response.buttons;
+        setButtons(buttons);
+        setResponseText(text);
+        setInputText('');
     }
 
     const getResponse = async () => {
@@ -24,15 +30,17 @@ export default function Chat (){
             body: JSON.stringify({ message: inputText }),
         });
         const data = await response.json();
-        console.log(data);
-        return data[0].text;
+        return data[0];
     };
 
     return(
         <div>
-            <input onChange={handleInput}/>
-            <button onClick={sendMessage}>Enviar</button>
+            <input onChange={handleInput} value={inputText}/>
+            <button onClick={() => sendMessage(inputText)}>Enviar</button>
             {responseText && <p>{responseText}</p>}
+            {buttons && buttons.map((button) => (
+                <button className="bg-red-500 m-5" key={button.title} onClick={() => sendMessage(button.payload)}>{button.title}</button>
+            ))}
         </div>
     );
 };
