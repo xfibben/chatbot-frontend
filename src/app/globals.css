@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.chatbot {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+}
+
+.chat-button {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+}
+
+@media (max-width: 600px) {
+    .chatbot .resize-container {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+    }
+}
