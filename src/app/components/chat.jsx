@@ -26,9 +26,9 @@ export default function Chat (){
     } else {
         setMessages([...messages, { type: 'user', text: inputText }]);
     }
+    setReseponsetoDb(inputText);
     setInputText(payload);
-    console.log('enviado');
-    const response = await getResponse();
+    const response = await getResponse(inputText);
     const text = response.text;
     const buttons = response.buttons;
     setButtons(buttons);
@@ -36,16 +36,28 @@ export default function Chat (){
     setInputText('');
 }
 
-    const getResponse = async () => {
+    const getResponse = async (text) => {
         const response = await fetch("http://localhost:5005/webhooks/rest/webhook/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ message: inputText }),
+            body: JSON.stringify({ message: text }),
         });
         const data = await response.json();
         return data[0];
+    };
+
+    async function setReseponsetoDb (message){
+        const response = await fetch("http://localhost:5000/chatbot/text", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ message: message }),
+        });
+        const data = await response.json();
+        return data;
     };
 
     useEffect(() => {
