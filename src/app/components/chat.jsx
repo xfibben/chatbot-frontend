@@ -37,7 +37,7 @@ export default function Chat (){
 }
 
     const getResponse = async (text) => {
-        const response = await fetch("http://206.189.182.72:5005/webhooks/rest/webhook", {
+        const response = await fetch("http://localhost:5005/webhooks/rest/webhook", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -49,7 +49,7 @@ export default function Chat (){
     };
 
     async function setReseponsetoDb (message){
-        const response = await fetch("http://206.189.182.72:5000/chatbot/text", {
+        const response = await fetch("http://localhost:5000/chatbot/text", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
