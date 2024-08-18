@@ -75,12 +75,12 @@ export default function Chat() {
     };
 
     const getResponse = async text => {
-        const response = await fetch("http://localhost:5005/webhooks/rest/webhook", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
+        const response = await fetch("http://localhost:5050/webhooks/rest/webhook", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
         return (await response.json())[0];
     };
 
     const setReseponsetoDb = async message => {
-        const response = await fetch("http://localhost:5060/chatbot/text", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message }) });
+        const response = await fetch("http://localhost:5040/chatbot/text", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message }) });
         return await response.json();
     };
 
