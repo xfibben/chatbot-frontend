@@ -41,3 +41,29 @@
 .animate-breathing {
     animation: breathing 2s infinite;
 }
+
+
+@keyframes snow {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100vh); }
+}
+
+.snowflake {
+  position: fixed;
+  top: -10px;
+  background: white;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: snow 10s linear infinite;
+}
+
+.snowflake:nth-child(odd) {
+  animation-duration: 15s;
+}
+
+.snow-container {
+  pointer-events: none;
+  z-index: 9999;
+}

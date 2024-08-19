@@ -5,6 +5,8 @@ import "/src/app/globals.css";
 import { BsMicFill } from "react-icons/bs";
 import { FiSettings } from "react-icons/fi";
 import { v4 as uuidv4 } from 'uuid';
+import Particles from "react-tsparticles";
+import snowConfig from "./snow.json";
 
 export default function Chat() {
     const [inputText, setInputText] = useState(""),
@@ -22,7 +24,54 @@ export default function Chat() {
         [conversations, setConversations] = useState([]),
         [currentConversationId, setCurrentConversationId] = useState(null);
     const recognitionRef = useRef(null),
-        messagesEndRef = useRef(null);
+        messagesEndRef = useRef(null),
+        logoButtonRef = useRef(null);
+
+    const [isSnowing, setIsSnowing] = useState(false),
+        [longPressTimeout, setLongPressTimeout] = useState(null);
+
+    const createSnow = () => {
+        const snowContainer = document.createElement('div');
+        snowContainer.className = 'snow-container';
+        for (let i = 0; i < 100; i++) {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.style.left = `${Math.random() * 100}vw`;
+            snowflake.style.animationDuration = `${Math.random() * 5 + 5}s`;
+            snowContainer.appendChild(snowflake);
+        }
+        document.body.appendChild(snowContainer);
+    };
+
+    const removeSnow = () => {
+        const snowContainer = document.querySelector('.snow-container');
+        if (snowContainer) snowContainer.remove();
+    };
+
+    const triggerSnowEffect = () => {
+        removeSnow();
+        createSnow();
+    };
+
+    const triggerHalloweenEffect = () => {
+        removeSnow(); // Elimina la nieve si está activa
+        // Aquí podrías agregar decoraciones de Halloween como imágenes
+    };
+
+    const handleLogoPress = () => {
+        setLongPressTimeout(setTimeout(() => {
+            if (isSnowing) {
+                triggerHalloweenEffect();
+            } else {
+                triggerSnowEffect();
+            }
+            setIsSnowing(!isSnowing);
+        }, 5000));
+    };
+
+    const handleLogoRelease = () => {
+        clearTimeout(longPressTimeout);
+    };
 
     useEffect(() => {
         const savedConversations = JSON.parse(localStorage.getItem('conversations')) || [],
@@ -204,9 +253,20 @@ export default function Chat() {
                     ))}
                 </ul>
             </div>
+            
             <div className={`relative w-3/4 h-full flex flex-col`}>
+            <Particles id="tsparticles" options={snowConfig} />
                 <div className="absolute top-4 left-4 flex items-center">
-                    <img src={logoImage} alt="Logo" className="h-20 w-20 rounded-full border-4 border-orange-600 object-contain mr-4 shadow-lg" />
+                    <img 
+                    src={logoImage} 
+                    alt="Logo" 
+                    className="h-20 w-20 rounded-full border-4 border-orange-600 object-contain mr-4 shadow-lg" 
+                    ref={logoButtonRef} 
+                    onMouseDown={handleLogoPress} 
+                    onMouseUp={handleLogoRelease}
+                    onTouchStart={handleLogoPress}
+                    onTouchEnd={handleLogoRelease}
+                />
                     <button className="text-black bg-gray-300 rounded-full p-2" onClick={toggleSettings}><FiSettings size={24} /></button>
                     {isSettingsOpen && (
                         <div className={`absolute top-full left-0 mt-2 p-4 ${isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"} shadow-lg rounded-lg z-10`}>
