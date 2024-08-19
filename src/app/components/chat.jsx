@@ -226,6 +226,7 @@ export default function Chat() {
     };
 
     const renderMessageText = (text) => {
+        if (!text) return null;  // Si 'text' es undefined o null, no renderiza nada
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         return text.split(urlRegex).map((part, index) => {
             if (urlRegex.test(part)) {
@@ -239,6 +240,7 @@ export default function Chat() {
             }
         });
     };
+
 
     return (
         <div className={`chatbot h-screen w-screen flex`} style={{ backgroundColor: bgColor }}>
