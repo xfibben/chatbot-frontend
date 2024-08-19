@@ -1,36 +1,71 @@
-'use client'; import { useState, useEffect, useRef } from "react"; import "react-resizable/css/styles.css"; import "/src/app/globals.css"; import { BsMicFill } from "react-icons/bs"; import { FiSettings } from "react-icons/fi"; import { v4 as uuidv4 } from 'uuid';
+'use client';
+import { useState, useEffect, useRef } from "react";
+import "react-resizable/css/styles.css";
+import "/src/app/globals.css";
+import { BsMicFill } from "react-icons/bs";
+import { FiSettings } from "react-icons/fi";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Chat() {
-    const [inputText, setInputText] = useState(""), [messages, setMessages] = useState([]), [buttons, setButtons] = useState([]), [bgColor, setBgColor] = useState("#ffffff"), [logoImage, setLogoImage] = useState("/default-logo.png"), [isSettingsOpen, setIsSettingsOpen] = useState(false), [isDarkMode, setIsDarkMode] = useState(false), [isListening, setIsListening] = useState(false), [userBubbleColor, setUserBubbleColor] = useState("#3b82f6"), [botBubbleColor, setBotBubbleColor] = useState("#e5e7eb"), [fontSize, setFontSize] = useState(16), [shakeMessageId, setShakeMessageId] = useState(null), [conversations, setConversations] = useState([]), [currentConversationId, setCurrentConversationId] = useState(null); 
-    const recognitionRef = useRef(null), messagesEndRef = useRef(null);
+    const [inputText, setInputText] = useState(""),
+        [messages, setMessages] = useState([]),
+        [buttons, setButtons] = useState([]),
+        [bgColor, setBgColor] = useState("#ffffff"),
+        [logoImage, setLogoImage] = useState("/default-logo.png"),
+        [isSettingsOpen, setIsSettingsOpen] = useState(false),
+        [isDarkMode, setIsDarkMode] = useState(false),
+        [isListening, setIsListening] = useState(false),
+        [userBubbleColor, setUserBubbleColor] = useState("#3b82f6"),
+        [botBubbleColor, setBotBubbleColor] = useState("#e5e7eb"),
+        [fontSize, setFontSize] = useState(16),
+        [shakeMessageId, setShakeMessageId] = useState(null),
+        [conversations, setConversations] = useState([]),
+        [currentConversationId, setCurrentConversationId] = useState(null);
+    const recognitionRef = useRef(null),
+        messagesEndRef = useRef(null);
 
     useEffect(() => {
-        const savedConversations = JSON.parse(localStorage.getItem('conversations')) || [], savedSettings = JSON.parse(localStorage.getItem('chatSettings')) || {}; 
-        setConversations(savedConversations); 
-        setBgColor(savedSettings.bgColor || "#ffffff"); 
-        setLogoImage(savedSettings.logoImage || "/default-logo.png"); 
-        setIsDarkMode(savedSettings.isDarkMode || false); 
-        setUserBubbleColor(savedSettings.userBubbleColor || "#3b82f6"); 
-        setBotBubbleColor(savedSettings.botBubbleColor || "#e5e7eb"); 
+        const savedConversations = JSON.parse(localStorage.getItem('conversations')) || [],
+            savedSettings = JSON.parse(localStorage.getItem('chatSettings')) || {};
+        setConversations(savedConversations);
+        setBgColor(savedSettings.bgColor || "#ffffff");
+        setLogoImage(savedSettings.logoImage || "/default-logo.png");
+        setIsDarkMode(savedSettings.isDarkMode || false);
+        setUserBubbleColor(savedSettings.userBubbleColor || "#3b82f6");
+        setBotBubbleColor(savedSettings.botBubbleColor || "#e5e7eb");
         setFontSize(savedSettings.fontSize || 16);
     }, []);
 
-    useEffect(() => { if (conversations.length > 0) localStorage.setItem('conversations', JSON.stringify(conversations)); }, [conversations]);
+    useEffect(() => {
+        if (conversations.length > 0) localStorage.setItem('conversations', JSON.stringify(conversations));
+    }, [conversations]);
 
     useEffect(() => {
         const settings = { bgColor, logoImage, isDarkMode, userBubbleColor, botBubbleColor, fontSize };
         localStorage.setItem('chatSettings', JSON.stringify(settings));
     }, [bgColor, logoImage, isDarkMode, userBubbleColor, botBubbleColor, fontSize]);
 
-    useEffect(() => { if (shakeMessageId) { const timeout = setTimeout(() => setShakeMessageId(null), 500); return () => clearTimeout(timeout); } }, [shakeMessageId]);
+    useEffect(() => {
+        if (shakeMessageId) {
+            const timeout = setTimeout(() => setShakeMessageId(null), 500);
+            return () => clearTimeout(timeout);
+        }
+    }, [shakeMessageId]);
 
-    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
     useEffect(() => {
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'es-ES'; recognition.continuous = false; recognition.interimResults = false;
-            recognition.onstart = () => setIsListening(true); recognition.onresult = event => setInputText(event.results[0][0].transcript); recognition.onerror = event => console.error('Error en el reconocimiento de voz: ', event.error); recognition.onend = () => setIsListening(false);
+            recognition.lang = 'es-ES';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.onstart = () => setIsListening(true);
+            recognition.onresult = event => setInputText(event.results[0][0].transcript);
+            recognition.onerror = event => console.error('Error en el reconocimiento de voz: ', event.error);
+            recognition.onend = () => setIsListening(false);
             recognitionRef.current = recognition;
         } else {
             console.error("Este navegador no soporta la API de Web Speech para reconocimiento de voz.");
@@ -55,10 +90,16 @@ export default function Chat() {
             return updatedConversations;
         });
 
-        setReseponsetoDb(newMessage.text); setInputText('');
+        setReseponsetoDb(newMessage.text);
+        setInputText('');
 
         const response = await getResponse(payload);
-        const botMessage = { type: 'bot', text: response.text };
+        let botMessage = { type: 'bot', text: response.text };
+
+        // Si hay contenido custom, como una imagen, lo agregamos al mensaje del bot
+        if (response.custom) {
+            botMessage = { ...botMessage, custom: response.custom };
+        }
 
         setMessages(prevMessages => [...prevMessages, botMessage]);
         setConversations(prev => {
@@ -75,12 +116,13 @@ export default function Chat() {
     };
 
     const getResponse = async text => {
-        const response = await fetch("http://localhost:5050/webhooks/rest/webhook", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH_BACKEND}webhooks/rest/webhook`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
+        console.log(response);
         return (await response.json())[0];
     };
 
     const setReseponsetoDb = async message => {
-        const response = await fetch("http://localhost:5040/chatbot/text", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message }) });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH_DATABASE}chatbot/text`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message }) });
         return await response.json();
     };
 
@@ -134,6 +176,21 @@ export default function Chat() {
         setCurrentConversationId(newConversation.id);
     };
 
+    const renderMessageText = (text) => {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text.split(urlRegex).map((part, index) => {
+            if (urlRegex.test(part)) {
+                return (
+                    <a key={index} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                        dar click aquí
+                    </a>
+                );
+            } else {
+                return part;
+            }
+        });
+    };
+
     return (
         <div className={`chatbot h-screen w-screen flex`} style={{ backgroundColor: bgColor }}>
             <div className="w-1/4 h-full bg-gray-200 p-4 overflow-auto">
@@ -167,11 +224,17 @@ export default function Chat() {
                 <div className={`p-4 h-full flex flex-col rounded-xl shadow-md ${isDarkMode ? "bg-gray-900" : "bg-white"}`} style={{ backgroundColor: bgColor }}>
                     <div className="flex-1 overflow-auto w-full flex flex-col space-y-2 p-3">
                         {messages.map((message, index) => {
-                            const isUserMessage = message.type === 'user', isLink = /^https?:\/\//.test(message.text);
-                            return isLink ? (
-                                <a key={index} href={message.text} target="_blank" rel="noopener noreferrer" className={`p-2 rounded-lg ${isUserMessage ? 'self-end' : 'self-start'} ${shakeMessageId === index ? 'animate-shake' : ''}`} style={{ backgroundColor: isUserMessage ? userBubbleColor : botBubbleColor, color: isUserMessage ? 'white' : 'black', fontSize: `${fontSize}px` }} onClick={() => speakMessage(message.text, index)}>{message.text}</a>
-                            ) : (
-                                <div key={index} className={`p-2 rounded-lg ${isUserMessage ? 'self-end' : 'self-start'} ${shakeMessageId === index ? 'animate-shake' : ''}`} style={{ backgroundColor: isUserMessage ? userBubbleColor : botBubbleColor, color: isUserMessage ? 'white' : 'black', fontSize: `${fontSize}px` }} onClick={() => speakMessage(message.text, index)}>{message.text}</div>
+                            const isUserMessage = message.type === 'user';
+                            return (
+                                <div key={index} className={`p-2 rounded-lg ${isUserMessage ? 'self-end' : 'self-start'} ${shakeMessageId === index ? 'animate-shake' : ''}`} style={{ backgroundColor: isUserMessage ? userBubbleColor : botBubbleColor, color: isUserMessage ? 'white' : 'black', fontSize: `${fontSize}px` }} onClick={() => speakMessage(message.text, index)}>
+                                    {renderMessageText(message.text)}
+                                    {message.custom && message.custom.image && (
+                                        <div className="mt-2">
+                                            <img src={message.custom.image} alt="Bot Image" className="rounded-lg shadow-md" />
+                                            <a href={message.custom.image} download className="text-blue-500 underline mt-1 inline-block">Descargar imagen</a>
+                                        </div>
+                                    )}
+                                </div>
                             );
                         })}
                         {buttons && buttons.map(button => (
