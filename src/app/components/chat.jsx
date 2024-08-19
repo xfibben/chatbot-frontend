@@ -37,7 +37,7 @@ export default function Chat (){
 }
 
     const getResponse = async (text) => {
-        const response = await fetch("http://206.189.182.72:5005/webhooks/rest/webhook", {
+        const response = await fetch("http://67.205.172.27:5050/webhooks/rest/webhook", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -49,7 +49,7 @@ export default function Chat (){
     };
 
     async function setReseponsetoDb (message){
-        const response = await fetch("http://206.189.182.72:5000/chatbot/text", {
+        const response = await fetch("http://67.205.172.27:5040/chatbot/text", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -66,9 +66,7 @@ export default function Chat (){
 
     
     return (
-    <>
-        {isChatbotVisible ? (
-            <div className="chatbot">
+    <div className="chatbot">
                 <ResizableBox className="resize-container" width={400} height={600} minConstraints={[300, 300]} maxConstraints={[Infinity, Infinity]}>
                     <button className="absolute top-2  px-4 right-2 bg-red-500 text-white rounded-full p-2" onClick={toggleChatbot}>X</button>
                     <div className="p-4 max-w-md mx-auto bg-white rounded-xl shadow-md flex flex-col items-center space-y-4 h-full">
@@ -90,9 +88,5 @@ export default function Chat (){
                     </div>
                 </ResizableBox>
             </div>
-        ) : (
-            <button className="chat-button fixed bottom-4 right-4 bg-blue-500 text-white rounded-full p-4" onClick={toggleChatbot}>Preguntame</button>
-        )}
-    </>
 );
 };
